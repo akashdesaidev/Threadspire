@@ -99,10 +99,10 @@ exports.getUserThreads = async (req, res) => {
         console.log("No status specified, returning all user threads");
       }
     } else {
-      // Other users can only see published threads
+      // Other users and unauthenticated users can only see published threads
       filter.status = "published";
       console.log(
-        "User viewing other's threads, restricting to published only"
+        "User viewing other's threads or unauthenticated, restricting to published only"
       );
     }
 

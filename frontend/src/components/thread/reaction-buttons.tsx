@@ -13,6 +13,8 @@ interface ReactionButtonsProps {
   userId?: string;
   disabled?: boolean;
   className?: string;
+  requiresAuth?: boolean;
+  onAuthRequired?: () => void;
 }
 
 export function ReactionButtons({
@@ -21,12 +23,22 @@ export function ReactionButtons({
   userId,
   disabled,
   className,
+  requiresAuth = false,
+  onAuthRequired,
 }: ReactionButtonsProps) {
   const getIsActive = (emoji: string) => {
     return userId && reactions[emoji]?.users.includes(userId);
   };
 
   const reactionEmojis = ["🤯", "💡", "😌", "🔥", "🫶"];
+
+  const handleReaction = (emoji: string) => {
+    if (requiresAuth && !userId && onAuthRequired) {
+      onAuthRequired();
+      return;
+    }
+    onReact(emoji);
+  };
 
   return (
     <div className={cn("flex items-center gap-2", className)}>
@@ -35,7 +47,7 @@ export function ReactionButtons({
         return (
           <button
             key={emoji}
-            onClick={() => onReact(emoji)}
+            onClick={() => handleReaction(emoji)}
             disabled={disabled}
             className={cn(
               "reaction-button transition-all flex flex-col items-center px-2 py-1 rounded-md border",

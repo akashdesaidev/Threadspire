@@ -31,7 +31,7 @@ router.put(
 );
 
 // Get user's threads
-router.get("/:id/threads", isAuthenticated, getUserThreads);
+router.get("/:id/threads", getUserThreads);
 
 // Get user analytics
 router.get("/:id/analytics", isAuthenticated, getUserAnalytics);

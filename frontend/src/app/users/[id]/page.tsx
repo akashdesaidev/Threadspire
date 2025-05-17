@@ -14,13 +14,14 @@ import {
   PlusCircle,
   ChevronLeft,
   ChevronRight,
+  LogIn,
 } from "lucide-react";
 import Link from "next/link";
 
 export default function UserProfilePage() {
   const { id } = useParams();
   const router = useRouter();
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, loading: authLoading } = useAuth();
   const [user, setUser] = useState<any>(null);
   const [threads, setThreads] = useState<any[]>([]);
   const [collections, setCollections] = useState<any[]>([]);
@@ -28,6 +29,7 @@ export default function UserProfilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedTab, setSelectedTab] = useState("threads");
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
   // Pagination states
   const [threadPage, setThreadPage] = useState(1);
@@ -157,6 +159,12 @@ export default function UserProfilePage() {
   };
 
   const handleCreateCollection = async () => {
+    if (!currentUser) {
+      setShowLoginPrompt(true);
+      setTimeout(() => setShowLoginPrompt(false), 3000);
+      return;
+    }
+
     const name = prompt("Enter a name for your new collection:");
     if (!name || !name.trim()) return;
 
@@ -170,6 +178,11 @@ export default function UserProfilePage() {
       console.error("Failed to create collection", err);
       alert(err.response?.data?.message || "Failed to create collection");
     }
+  };
+
+  const showLoginMessage = () => {
+    setShowLoginPrompt(true);
+    setTimeout(() => setShowLoginPrompt(false), 3000);
   };
 
   const renderPagination = (
@@ -234,6 +247,22 @@ export default function UserProfilePage() {
   return (
     <MainLayout>
       <div className="container py-8">
+        {showLoginPrompt && (
+          <div className="max-w-4xl mx-auto mb-4 bg-primary/10 text-primary p-3 rounded-md flex items-center gap-2">
+            <LogIn className="h-4 w-4" />
+            <span>
+              Please{" "}
+              <Link
+                href="/login"
+                className="text-primary font-medium underline"
+              >
+                log in
+              </Link>{" "}
+              to perform this action
+            </span>
+          </div>
+        )}
+
         <div className="max-w-4xl mx-auto">
           <div className="bg-card border rounded-lg p-6 mb-8">
             <div className="flex items-start justify-between mb-4">
@@ -248,193 +277,166 @@ export default function UserProfilePage() {
                   </p>
                 </div>
               </div>
+
               {isOwnProfile && (
                 <Link
                   href="/settings/profile"
-                  className="flex items-center gap-1 px-3 py-1 text-sm border rounded-md hover:bg-secondary"
+                  className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary"
                 >
-                  <Edit className="h-3 w-3" />
+                  <Edit className="h-4 w-4" />
                   Edit Profile
                 </Link>
               )}
             </div>
-            {user.bio && (
-              <p className="text-muted-foreground mb-4">{user.bio}</p>
-            )}
+
+            {user.bio && <p className="mb-4">{user.bio}</p>}
           </div>
 
-          <Tabs
-            defaultValue="threads"
-            value={selectedTab}
-            onValueChange={setSelectedTab}
-            className="mb-8"
-          >
-            <TabsList className="mb-6">
+          <Tabs value={selectedTab} onValueChange={setSelectedTab}>
+            <TabsList className="mb-8 justify-start">
               <TabsTrigger value="threads">Threads</TabsTrigger>
               {isOwnProfile && (
                 <>
-                  <TabsTrigger value="collections">Collections</TabsTrigger>
                   <TabsTrigger value="bookmarks">Bookmarks</TabsTrigger>
+                  <TabsTrigger value="collections">Collections</TabsTrigger>
                 </>
               )}
             </TabsList>
 
-            <TabsContent value="threads" className="space-y-4">
-              {threadsLoading && threadPage === 1 ? (
-                <div className="bg-card p-8 rounded-lg">
-                  <div className="animate-pulse space-y-4">
-                    <div className="h-10 bg-secondary rounded w-3/4"></div>
-                    <div className="h-20 bg-secondary rounded"></div>
-                    <div className="h-20 bg-secondary rounded"></div>
-                  </div>
+            <TabsContent value="threads">
+              {threadsLoading ? (
+                <div className="animate-pulse space-y-4">
+                  {[1, 2, 3].map((i) => (
+                    <div
+                      key={i}
+                      className="h-32 bg-secondary rounded-lg border"
+                    ></div>
+                  ))}
                 </div>
               ) : threads.length === 0 ? (
-                <div className="bg-secondary/30 p-8 rounded-lg text-center">
-                  <p className="text-muted-foreground">
+                <div className="border rounded-lg p-8 text-center">
+                  <p className="text-muted-foreground mb-4">
                     {isOwnProfile
-                      ? "You haven't published any threads yet."
-                      : `${user.name} hasn't published any threads yet.`}
+                      ? "You haven't published any threads yet"
+                      : `${user.name} hasn't published any threads yet`}
                   </p>
                   {isOwnProfile && (
                     <Link
                       href="/threads/create"
-                      className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
+                      className="px-4 py-2 bg-primary text-primary-foreground rounded-md"
                     >
-                      <PlusCircle className="h-4 w-4" />
-                      Create Thread
+                      Create a thread
                     </Link>
                   )}
                 </div>
               ) : (
                 <>
-                  <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
                     {threads.map((thread) => (
-                      <ThreadCard key={thread._id} thread={thread} />
+                      <ThreadCard
+                        key={thread._id}
+                        thread={thread}
+                        requiresAuth={!currentUser}
+                        onAuthRequired={showLoginMessage}
+                      />
                     ))}
                   </div>
-
-                  {threadsLoading && threadPage > 1 && (
-                    <div className="flex justify-center mt-6">
-                      <div className="animate-pulse h-6 w-24 bg-secondary rounded"></div>
-                    </div>
-                  )}
-
                   {renderPagination(
                     threadPage,
                     threadPagination.pages,
-                    (page) => fetchThreads(page),
+                    fetchThreads,
                     threadsLoading
                   )}
                 </>
               )}
             </TabsContent>
 
-            <TabsContent value="collections" className="space-y-4">
-              {collections.length === 0 ? (
-                <div className="bg-secondary/30 p-8 rounded-lg text-center">
-                  <p className="text-muted-foreground">
-                    {isOwnProfile
-                      ? "You haven't created any collections yet."
-                      : `${user.name} hasn't created any collections yet.`}
-                  </p>
-                  {isOwnProfile && (
-                    <button
-                      onClick={handleCreateCollection}
-                      className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-                    >
-                      <PlusCircle className="h-4 w-4" />
-                      Create Collection
-                    </button>
-                  )}
-                </div>
-              ) : (
-                <div className="grid md:grid-cols-2 gap-6">
-                  {collections.map((collection) => (
-                    <div
-                      key={collection.name}
-                      className="bg-card border rounded-lg p-5 hover:shadow-md transition-shadow"
-                    >
-                      <div className="flex items-center gap-3 mb-3">
-                        <FolderClosed className="h-5 w-5 text-primary" />
-                        <h3 className="text-xl font-semibold">
-                          {collection.name}
-                        </h3>
-                      </div>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        {collection.threads.length} threads
-                      </p>
-                      {collection.threads.length > 0 && (
-                        <div className="border-t pt-3">
-                          <h4 className="text-sm font-medium mb-2">
-                            Recent threads:
-                          </h4>
-                          <ul className="space-y-1">
-                            {collection.threads
-                              .slice(0, 3)
-                              .map((thread: any) => (
-                                <li key={thread._id} className="truncate">
-                                  <Link
-                                    href={`/threads/${thread._id}`}
-                                    className="text-sm text-primary hover:underline"
-                                  >
-                                    {thread.title || "View thread"}
-                                  </Link>
-                                </li>
-                              ))}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </TabsContent>
-
             {isOwnProfile && (
-              <TabsContent value="bookmarks" className="space-y-4">
-                {bookmarksLoading && bookmarkPage === 1 ? (
-                  <div className="bg-card p-8 rounded-lg">
+              <>
+                <TabsContent value="bookmarks">
+                  {bookmarksLoading ? (
                     <div className="animate-pulse space-y-4">
-                      <div className="h-10 bg-secondary rounded w-3/4"></div>
-                      <div className="h-20 bg-secondary rounded"></div>
-                      <div className="h-20 bg-secondary rounded"></div>
-                    </div>
-                  </div>
-                ) : bookmarks.length === 0 ? (
-                  <div className="bg-secondary/30 p-8 rounded-lg text-center">
-                    <p className="text-muted-foreground">
-                      You haven't bookmarked any threads yet.
-                    </p>
-                    <Link
-                      href="/explore"
-                      className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-                    >
-                      Explore Threads
-                    </Link>
-                  </div>
-                ) : (
-                  <>
-                    <div className="grid md:grid-cols-2 gap-6">
-                      {bookmarks.map((thread) => (
-                        <ThreadCard key={thread._id} thread={thread} />
+                      {[1, 2, 3].map((i) => (
+                        <div
+                          key={i}
+                          className="h-32 bg-secondary rounded-lg border"
+                        ></div>
                       ))}
                     </div>
-
-                    {bookmarksLoading && bookmarkPage > 1 && (
-                      <div className="flex justify-center mt-6">
-                        <div className="animate-pulse h-6 w-24 bg-secondary rounded"></div>
+                  ) : bookmarks.length === 0 ? (
+                    <div className="border rounded-lg p-8 text-center">
+                      <p className="text-muted-foreground mb-4">
+                        You haven't bookmarked any threads yet
+                      </p>
+                      <Link
+                        href="/explore"
+                        className="px-4 py-2 bg-primary text-primary-foreground rounded-md"
+                      >
+                        Explore threads
+                      </Link>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="space-y-4">
+                        {bookmarks.map((thread) => (
+                          <ThreadCard key={thread._id} thread={thread} />
+                        ))}
                       </div>
-                    )}
+                      {renderPagination(
+                        bookmarkPage,
+                        bookmarkPagination.pages,
+                        fetchBookmarks,
+                        bookmarksLoading
+                      )}
+                    </>
+                  )}
+                </TabsContent>
 
-                    {renderPagination(
-                      bookmarkPage,
-                      bookmarkPagination.pages,
-                      (page) => fetchBookmarks(page),
-                      bookmarksLoading
-                    )}
-                  </>
-                )}
-              </TabsContent>
+                <TabsContent value="collections">
+                  <div className="flex justify-end mb-4">
+                    <button
+                      onClick={handleCreateCollection}
+                      className="flex items-center gap-1 text-sm bg-primary text-primary-foreground px-3 py-2 rounded"
+                    >
+                      <PlusCircle className="h-4 w-4" />
+                      New Collection
+                    </button>
+                  </div>
+
+                  {collections.length === 0 ? (
+                    <div className="border rounded-lg p-8 text-center">
+                      <p className="text-muted-foreground mb-4">
+                        You haven't created any collections yet
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {collections.map((collection) => (
+                        <Link
+                          key={collection.name}
+                          href={`/bookmarks?collection=${encodeURIComponent(
+                            collection.name
+                          )}`}
+                          className="border rounded-lg p-4 bg-card hover:shadow-md transition-shadow"
+                        >
+                          <div className="flex items-center gap-2 mb-1">
+                            <FolderClosed className="h-5 w-5 text-primary" />
+                            <h3 className="font-medium truncate">
+                              {collection.name}
+                            </h3>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {collection.threads.length}{" "}
+                            {collection.threads.length === 1
+                              ? "thread"
+                              : "threads"}
+                          </p>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </TabsContent>
+              </>
             )}
           </Tabs>
         </div>

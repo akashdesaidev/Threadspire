@@ -30,9 +30,16 @@ interface ThreadCardProps {
     status?: "draft" | "published";
   };
   className?: string;
+  requiresAuth?: boolean;
+  onAuthRequired?: () => void;
 }
 
-export function ThreadCard({ thread, className }: ThreadCardProps) {
+export function ThreadCard({
+  thread,
+  className,
+  requiresAuth = false,
+  onAuthRequired,
+}: ThreadCardProps) {
   const totalReactions = thread?.segments?.reduce((total, segment) => {
     return (
       total +
@@ -81,6 +88,8 @@ export function ThreadCard({ thread, className }: ThreadCardProps) {
               threadId={thread._id}
               isBookmarked={!!thread.isBookmarked}
               bookmarkCount={thread.bookmarkCount}
+              requiresAuth={requiresAuth}
+              onAuthRequired={onAuthRequired}
             />
           </div>
         )}

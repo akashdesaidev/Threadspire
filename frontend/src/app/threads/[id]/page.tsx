@@ -359,6 +359,11 @@ export default function ThreadDetailPage() {
                         }
                         userId={user?._id}
                         disabled={reactionLoading}
+                        requiresAuth={!user}
+                        onAuthRequired={() => {
+                          setShowLoginPrompt(true);
+                          setTimeout(() => setShowLoginPrompt(false), 3000);
+                        }}
                         className={
                           reactionLoading
                             ? "opacity-70 pointer-events-none"
