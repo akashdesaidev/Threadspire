@@ -32,6 +32,7 @@ interface ThreadCardProps {
   className?: string;
   requiresAuth?: boolean;
   onAuthRequired?: () => void;
+  actionButtons?: React.ReactNode;
 }
 
 export function ThreadCard({
@@ -39,6 +40,7 @@ export function ThreadCard({
   className,
   requiresAuth = false,
   onAuthRequired,
+  actionButtons,
 }: ThreadCardProps) {
   const totalReactions = thread?.segments?.reduce((total, segment) => {
     return (
@@ -56,7 +58,7 @@ export function ThreadCard({
   return (
     <div
       className={cn(
-        "bg-card rounded-lg border p-5 transition-shadow hover:shadow-md",
+        "bg-card rounded-lg border p-5 transition-shadow hover:shadow-md flex flex-col h-full relative",
         isDraft && "border-dashed border-secondary",
         className
       )}
@@ -110,7 +112,7 @@ export function ThreadCard({
         </span>
       </div>
 
-      <div className="space-y-3 mb-4">
+      <div className="space-y-3 mb-4 flex-1">
         {preview?.map((segment) => (
           <p
             key={segment._id}
@@ -126,6 +128,13 @@ export function ThreadCard({
           <TagBadge key={tag} tag={tag} />
         ))}
       </div>
+
+      {/* Render action buttons if provided */}
+      {actionButtons && (
+        <div className="absolute bottom-4 right-4 flex gap-2 z-10">
+          {actionButtons}
+        </div>
+      )}
     </div>
   );
 }

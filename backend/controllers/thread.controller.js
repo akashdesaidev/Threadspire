@@ -355,30 +355,18 @@ exports.updateThread = async (req, res) => {
 
     // Special handling for status changes from draft to published
     if (thread.status === "draft" && status === "published") {
-      // Create a published copy of the thread, keeping the draft version
-      const publishedThread = new Thread({
-        title: title || thread.title,
-        author: thread.author,
-        segments: segments || thread.segments,
-        tags: tags || thread.tags,
-        status: "published",
-        // Only set originalThread if this draft was forked from another thread
-        originalThread: thread.originalThread ? thread.originalThread : null,
-        originalAuthor: thread.originalAuthor || null,
-      });
-
-      await publishedThread.save();
-
-      // Mark the original draft as published to prevent it from showing in drafts
+      // Simply update the draft to published status
+      thread.title = title || thread.title;
+      if (segments) thread.segments = segments;
+      if (tags) thread.tags = tags;
       thread.status = "published";
+
       await thread.save();
 
-      // Return both threads
       return res.status(200).json({
         success: true,
-        message: "Thread published successfully while preserving draft",
-        thread: publishedThread,
-        draftThread: thread,
+        message: "Thread published successfully",
+        thread: thread,
       });
     } else {
       // For other updates, update the thread directly

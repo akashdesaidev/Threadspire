@@ -390,36 +390,26 @@ export default function DashboardPage() {
           tags: threadData.tags,
           status: "published",
         });
-        console.log("Publish response:", updateResponse);
 
-        // The backend creates a new published thread but keeps the draft
-        // We need to find the published thread in the response
         if (updateResponse.data.thread) {
-          // Add the new published thread to the published threads list
-          setThreads((prev) => [updateResponse.data.thread, ...prev]);
+          const publishedThread = updateResponse.data.thread;
 
-          // Update stats to reflect the new published thread
-          setStats((prev) => ({
-            ...prev,
-            totalThreads: prev.totalThreads + 1,
-          }));
+          // Add to published threads and remove from drafts
+          setThreads((prev) => [publishedThread, ...prev]);
+          setDraftThreads((prev) => prev.filter((t) => t._id !== threadId));
+
+          toast.success(`"${publishedThread.title}" published successfully`, {
+            description: "Your thread is now available for others to read",
+          });
         }
 
-        toast.success(`"${threadData.title}" published successfully`, {
-          description: "Your thread is now available for others to read",
-        });
-
-        // Remove the draft from the UI but not directly from the API
-        // since the backend keeps it for reference
-        setDraftThreads((prev) => prev.filter((t) => t._id !== threadId));
-
-        // Force a complete refresh to ensure UI is in sync with backend
+        // Force a refresh after a short delay to get updated lists
         setTimeout(() => {
           forceRefresh();
         }, 500);
       } catch (err) {
         // Thread not found or other error
-        console.error("Error getting thread:", err);
+        console.error("Error publishing thread:", err);
         toast.error("Error accessing the draft", {
           description:
             "The draft may have been deleted or is no longer accessible",
@@ -635,9 +625,10 @@ export default function DashboardPage() {
                 <>
                   <div className="grid md:grid-cols-2 gap-6">
                     {threads.map((thread) => (
-                      <div key={thread._id} className="relative">
-                        <ThreadCard thread={thread} />
-                        <div className="absolute bottom-4 right-4 flex gap-2">
+                      <ThreadCard
+                        key={thread._id}
+                        thread={thread}
+                        actionButtons={
                           <button
                             className="p-1.5 bg-destructive/10 text-destructive hover:bg-destructive/20 rounded"
                             onClick={() => handleDeletePublished(thread._id)}
@@ -649,8 +640,8 @@ export default function DashboardPage() {
                               <span className="sr-only">Deleting...</span>
                             )}
                           </button>
-                        </div>
-                      </div>
+                        }
+                      />
                     ))}
                   </div>
 
@@ -699,42 +690,45 @@ export default function DashboardPage() {
                 <>
                   <div className="grid md:grid-cols-2 gap-6">
                     {draftThreads.map((thread) => (
-                      <div key={thread._id} className="relative">
-                        <ThreadCard thread={thread} />
-                        <div className="absolute bottom-4 right-4 flex gap-2">
-                          <button
-                            className="p-1.5 bg-secondary/80 text-primary hover:bg-secondary rounded"
-                            onClick={() =>
-                              router.push(`/threads/${thread._id}/edit`)
-                            }
-                            title="Edit draft"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </button>
-                          <button
-                            className="p-1.5 bg-primary/10 text-primary hover:bg-primary/20 rounded"
-                            onClick={() => handlePublishDraft(thread._id)}
-                            disabled={publishingThreadId === thread._id}
-                            title="Publish draft"
-                          >
-                            <Share2 className="h-4 w-4" />
-                            {publishingThreadId === thread._id && (
-                              <span className="sr-only">Publishing...</span>
-                            )}
-                          </button>
-                          <button
-                            className="p-1.5 bg-destructive/10 text-destructive hover:bg-destructive/20 rounded"
-                            onClick={() => handleDeleteDraft(thread._id)}
-                            disabled={deletingThreadId === thread._id}
-                            title="Delete draft"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                            {deletingThreadId === thread._id && (
-                              <span className="sr-only">Deleting...</span>
-                            )}
-                          </button>
-                        </div>
-                      </div>
+                      <ThreadCard
+                        key={thread._id}
+                        thread={thread}
+                        actionButtons={
+                          <>
+                            <button
+                              className="p-1.5 bg-secondary/80 text-primary hover:bg-secondary rounded"
+                              onClick={() =>
+                                router.push(`/threads/${thread._id}/edit`)
+                              }
+                              title="Edit draft"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </button>
+                            <button
+                              className="p-1.5 bg-primary/10 text-primary hover:bg-primary/20 rounded"
+                              onClick={() => handlePublishDraft(thread._id)}
+                              disabled={publishingThreadId === thread._id}
+                              title="Publish draft"
+                            >
+                              <Share2 className="h-4 w-4" />
+                              {publishingThreadId === thread._id && (
+                                <span className="sr-only">Publishing...</span>
+                              )}
+                            </button>
+                            <button
+                              className="p-1.5 bg-destructive/10 text-destructive hover:bg-destructive/20 rounded"
+                              onClick={() => handleDeleteDraft(thread._id)}
+                              disabled={deletingThreadId === thread._id}
+                              title="Delete draft"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              {deletingThreadId === thread._id && (
+                                <span className="sr-only">Deleting...</span>
+                              )}
+                            </button>
+                          </>
+                        }
+                      />
                     ))}
                   </div>
 
