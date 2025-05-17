@@ -21,6 +21,7 @@ router.get("/", getThreads);
 
 // Get thread by ID (public for published, authenticated for drafts)
 router.get("/:id", getThreadById);
+router.get("/:id/edit", isAuthenticated, getThreadById);
 
 // Get forks of a thread
 router.get("/:id/forks", getThreadForks);

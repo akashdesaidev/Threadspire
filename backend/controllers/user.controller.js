@@ -67,12 +67,13 @@ exports.updateProfile = async (req, res) => {
 exports.getUserThreads = async (req, res) => {
   try {
     const { page = 1, limit = 10, status } = req.query;
+
     const skip = (page - 1) * limit;
 
     console.log("getUserThreads request params:", {
       userId: req.params.id,
       requestedStatus: status,
-      requestUserId: req.user?._id,
+      requestUserId: req.user,
     });
 
     // Build filter object

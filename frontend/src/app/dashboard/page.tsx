@@ -304,7 +304,7 @@ export default function DashboardPage() {
   const handleDeleteDraft = async (threadId: string) => {
     try {
       // First check if the thread exists
-      const threadResponse = await threadAPI.getThreadById(threadId);
+      const threadResponse = await threadAPI.getDraftThreadById(threadId);
       const { thread, relatedVersions } = threadResponse.data;
 
       const confirmMsg = relatedVersions?.publishedVersion
@@ -368,7 +368,7 @@ export default function DashboardPage() {
 
       // First check if the thread still exists and is a draft
       try {
-        const checkResponse = await threadAPI.getThreadById(threadId);
+        const checkResponse = await threadAPI.getDraftThreadById(threadId);
         const threadData = checkResponse.data.thread;
 
         if (threadData.status !== "draft") {

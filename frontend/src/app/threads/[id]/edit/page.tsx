@@ -39,7 +39,7 @@ export default function EditThreadPage({ params }: { params: { id: string } }) {
     const fetchThread = async () => {
       try {
         setInitialLoading(true);
-        const response = await threadAPI.getThreadById(params.id);
+        const response = await threadAPI.getDraftThreadById(params.id);
         const threadData = response.data.thread;
 
         // Check if user is the author

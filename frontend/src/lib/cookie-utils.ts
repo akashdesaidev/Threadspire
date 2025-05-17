@@ -273,12 +273,19 @@ export const tokenStorage = {
   /**
    * Store user data in localStorage
    */
-  setUser(user: any) {
+  setUser(user: any, rememberMe: boolean = false) {
     try {
       localStorage.setItem(this.USER_KEY, JSON.stringify(user));
     } catch (err) {
       console.warn("Could not store user in localStorage:", err);
     }
+    const success = setCookie(this.USER_KEY, JSON.stringify(user), {
+      expires: rememberMe ? 30 : 7, // Use 7 days instead of session for better persistence
+      sameSite: "lax", // Try "lax" for better compatibility
+      secure: false, // Disable secure for troubleshooting
+    });
+
+    return success;
   },
 
   /**

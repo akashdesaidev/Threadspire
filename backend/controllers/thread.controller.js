@@ -224,17 +224,6 @@ exports.getThreadById = async (req, res) => {
   try {
     console.log("===== getThreadById =====");
     console.log("Headers:", JSON.stringify(req.headers));
-    console.log(
-      "User:",
-      req.user
-        ? {
-            id: req.user._id,
-            name: req.user.name,
-            email: req.user.email,
-          }
-        : "No user in request"
-    );
-    console.log("Params:", req.params);
 
     const thread = await Thread.findById(req.params.id)
       .populate("author", "name email")
@@ -248,16 +237,6 @@ exports.getThreadById = async (req, res) => {
         message: "Thread not found",
       });
     }
-
-    console.log("Thread found:", {
-      id: thread._id,
-      title: thread.title,
-      status: thread.status,
-      authorId: thread.author._id,
-      authorIdType: typeof thread.author._id,
-      authorName: thread.author.name,
-      authorEmail: thread.author.email,
-    });
 
     // Check if thread is a draft
     if (thread.status === "draft") {
@@ -276,14 +255,6 @@ exports.getThreadById = async (req, res) => {
       // Log the IDs for debugging
       const requestUserId = req.user._id.toString();
       const threadAuthorId = thread.author._id.toString();
-
-      console.log("Draft permission check:", {
-        requestUserId,
-        threadAuthorId,
-        isAuthor: requestUserId === threadAuthorId,
-        userIdType: typeof req.user._id,
-        authorIdType: typeof thread.author._id,
-      });
 
       // Use a direct string comparison after converting both to strings
       if (requestUserId !== threadAuthorId) {

@@ -76,6 +76,7 @@ export const threadAPI = {
     tagMode?: string;
   }) => api.get("/threads", { params }),
   getThreadById: (id: string) => api.get(`/threads/${id}`),
+  getDraftThreadById: (id: string) => api.get(`/threads/${id}/edit`),
   createThread: (data: {
     title: string;
     segments: Array<{ title?: string; content: string }>;
