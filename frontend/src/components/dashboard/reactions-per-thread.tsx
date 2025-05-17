@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -48,7 +48,24 @@ export function ReactionsPerThread({
   threadsWithReactions,
   loading = false,
 }: ReactionsPerThreadProps) {
-  if (loading || !threadsWithReactions || threadsWithReactions.length === 0) {
+  const [isLoading, setIsLoading] = useState(loading);
+
+  // Add useEffect to handle loading state changes with a delay
+  useEffect(() => {
+    // When loading becomes false (API call complete), wait a bit before resetting local state
+    if (loading === false && isLoading === true) {
+      // Small timeout to ensure data is processed before showing
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+      }, 500);
+
+      return () => clearTimeout(timer);
+    } else {
+      setIsLoading(loading);
+    }
+  }, [loading]);
+
+  if (isLoading || !threadsWithReactions || threadsWithReactions.length === 0) {
     return <ReactionsPerThreadSkeleton />;
   }
 

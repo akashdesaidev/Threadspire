@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,7 +24,24 @@ export function MostForkedThread({
   mostForkedThread,
   loading = false,
 }: MostForkedThreadProps) {
-  if (loading) {
+  const [isLoading, setIsLoading] = useState(loading);
+
+  // Add useEffect to handle loading state changes with a delay
+  useEffect(() => {
+    // When loading becomes false (API call complete), wait a bit before resetting local state
+    if (loading === false && isLoading === true) {
+      // Small timeout to ensure data is processed before showing
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+      }, 500);
+
+      return () => clearTimeout(timer);
+    } else {
+      setIsLoading(loading);
+    }
+  }, [loading]);
+
+  if (isLoading) {
     return <MostForkedThreadSkeleton />;
   }
 
