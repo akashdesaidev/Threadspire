@@ -100,7 +100,7 @@ export default function UserProfilePage() {
     try {
       setThreadsLoading(true);
       // Fetch user's threads with pagination
-      const threadsResponse = await userAPI.getUserThreads(id as string, {
+      const threadsResponse = await userAPI.getPublicUserThreads(id as string, {
         status: "published",
         page,
         limit: 10,

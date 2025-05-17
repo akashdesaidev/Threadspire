@@ -113,6 +113,10 @@ export const userAPI = {
     id: string,
     params?: { page?: number; limit?: number; status?: string }
   ) => api.get(`/users/${id}/threads`, { params }),
+  getPublicUserThreads: (
+    id: string,
+    params?: { page?: number; limit?: number; status?: string }
+  ) => api.get(`/users/${id}/publicThreads`, { params }),
   getUserAnalytics: (id: string) => api.get(`/users/${id}/analytics`),
   createCollection: (data: { name: string }) =>
     api.post("/users/collections", data),
