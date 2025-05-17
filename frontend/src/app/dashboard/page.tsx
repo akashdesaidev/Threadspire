@@ -566,15 +566,18 @@ export default function DashboardPage() {
           </div>
         </div>
         {/* Analytics Section */}
-        {/* Thread Activity Graph */}
         <ThreadActivityGraph />
 
         {/* Other Analytics Components */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mb-8 mt-8">
           <ReactionsPerThread
             threadsWithReactions={analyticsData.threadsWithReactions}
+            loading={loading}
           />
-          <MostForkedThread mostForkedThread={analyticsData.mostForkedThread} />
+          <MostForkedThread
+            mostForkedThread={analyticsData.mostForkedThread}
+            loading={loading}
+          />
         </div>
         {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

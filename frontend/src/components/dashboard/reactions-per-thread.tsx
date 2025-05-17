@@ -12,6 +12,7 @@ import {
   ResponsiveContainer,
   Cell,
 } from "recharts";
+import { ReactionsPerThreadSkeleton } from "./reactions-per-thread-skeleton";
 
 interface ReactionData {
   emoji: string;
@@ -40,11 +41,17 @@ interface ThreadWithReactions {
 
 interface ReactionsPerThreadProps {
   threadsWithReactions: ThreadWithReactions[];
+  loading?: boolean;
 }
 
 export function ReactionsPerThread({
   threadsWithReactions,
+  loading = false,
 }: ReactionsPerThreadProps) {
+  if (loading || !threadsWithReactions || threadsWithReactions.length === 0) {
+    return <ReactionsPerThreadSkeleton />;
+  }
+
   // Add more detailed debugging logs
   console.log("ReactionsPerThread component", {
     threadCount: threadsWithReactions?.length || 0,

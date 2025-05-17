@@ -6,6 +6,7 @@ import { Edit, FolderIcon, Loader2, Plus, Trash } from "lucide-react";
 
 import { MainLayout } from "@/components/layout/main-layout";
 import { ThreadCard } from "@/components/thread/thread-card";
+import { ThreadCardSkeleton } from "@/components/thread/thread-card-skeleton";
 import { useAuth } from "@/lib/auth-context";
 import { threadAPI, userAPI } from "@/lib/api";
 
@@ -326,8 +327,10 @@ export default function BookmarksPage() {
 
           <div className="md:col-span-3">
             {loading ? (
-              <div className="flex justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <div className="space-y-4">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <ThreadCardSkeleton key={index} />
+                ))}
               </div>
             ) : error ? (
               <div className="bg-destructive/20 text-destructive p-4 rounded-lg">
@@ -373,10 +376,10 @@ export default function BookmarksPage() {
                                   activeCollection
                                 )
                               }
-                              className="absolute top-3 right-3 p-2 bg-card/80 hover:bg-destructive/20 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                              className="absolute bottom-3 right-3 px-3 py-1 text-xs font-medium bg-card/90 hover:bg-destructive/20 rounded-md text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
                               aria-label="Remove from collection"
                             >
-                              <Trash className="h-4 w-4 text-destructive" />
+                              Remove
                             </button>
                           )}
 

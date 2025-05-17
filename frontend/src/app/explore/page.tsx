@@ -7,6 +7,9 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { threadAPI } from "@/lib/api";
 import { TagBadge } from "@/components/thread/tag-badge";
 import { Search } from "lucide-react";
+import { ThreadCardSkeleton } from "@/components/thread/thread-card-skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ChevronDown, ChevronRight } from "lucide-react";
 
 // Updated tags with categories
 const TAG_CATEGORIES = {
@@ -275,7 +278,7 @@ export default function ExplorePage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+        <div className="grid md:grid-cols-4 gap-6">
           <div className="md:col-span-1">
             <div className="bg-card border rounded-md p-4 sticky top-20">
               <h2 className="font-semibold mb-4">Filter by Tags</h2>
@@ -295,7 +298,7 @@ export default function ExplorePage() {
               </div>
 
               {/* Tag filter mode */}
-              <div className="flex items-center justify-between mb-4 text-sm">
+              <div className="mb-4">
                 <span>Match threads with:</span>
                 <div className="flex border rounded-md overflow-hidden">
                   <button
@@ -359,45 +362,42 @@ export default function ExplorePage() {
               )}
 
               {/* Tag categories */}
-              <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
-                {Object.entries(filteredTagCategories).map(
-                  ([category, tags]) => (
-                    <div key={category} className="border-b pb-2 last:border-0">
-                      <button
-                        onClick={() => toggleCategory(category)}
-                        className="flex justify-between items-center w-full text-sm font-medium mb-2"
-                      >
-                        {category}
-                        <span className="text-xs">
-                          {expandedCategories.includes(category) ? "−" : "+"}
-                        </span>
-                      </button>
-
-                      {expandedCategories.includes(category) && (
-                        <div className="flex flex-wrap gap-2">
-                          {tags.map((tag) => (
-                            <button
-                              key={tag}
-                              onClick={() => toggleTag(tag)}
-                              className={`tag-badge transition-colors text-xs ${
-                                selectedTags.includes(tag)
-                                  ? "bg-primary/10 text-primary"
-                                  : ""
-                              }`}
-                            >
-                              #{tag}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )
-                )}
-
-                {Object.keys(filteredTagCategories).length === 0 && (
-                  <div className="text-center py-4 text-sm text-muted-foreground">
-                    No matching tags found
+              <div className="space-y-3">
+                {Object.keys(filteredTagCategories).length === 0 ? (
+                  <div className="text-sm text-muted-foreground text-center py-2">
+                    No tags match your search
                   </div>
+                ) : (
+                  Object.entries(filteredTagCategories).map(
+                    ([category, tags]) => (
+                      <div key={category} className="space-y-2">
+                        <div
+                          className="flex items-center gap-2 cursor-pointer"
+                          onClick={() => toggleCategory(category)}
+                        >
+                          {expandedCategories.includes(category) ? (
+                            <ChevronDown className="h-4 w-4" />
+                          ) : (
+                            <ChevronRight className="h-4 w-4" />
+                          )}
+                          <h3 className="font-medium text-sm">{category}</h3>
+                        </div>
+                        {expandedCategories.includes(category) && (
+                          <div className="flex flex-wrap gap-2 pl-6">
+                            {tags.map((tag) => (
+                              <TagBadge
+                                key={tag}
+                                tag={tag}
+                                onClick={() => toggleTag(tag)}
+                                selected={selectedTags.includes(tag)}
+                                className="cursor-pointer"
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  )
                 )}
               </div>
             </div>
@@ -405,7 +405,11 @@ export default function ExplorePage() {
 
           <div className="md:col-span-3">
             {loading ? (
-              <div className="text-center py-12">Loading threads...</div>
+              <div className="grid grid-cols-1 gap-6">
+                {Array.from({ length: 6 }).map((_, index) => (
+                  <ThreadCardSkeleton key={index} />
+                ))}
+              </div>
             ) : error ? (
               <div className="bg-destructive/10 text-destructive p-4 rounded-md">
                 {error}

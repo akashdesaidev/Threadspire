@@ -335,7 +335,7 @@ export function BookmarkButton({
                     onClick={() =>
                       handleRemoveFromCollection(currentCollection)
                     }
-                    className="mt-1 text-primary text-xs hover:underline"
+                    className="mt-2 text-primary text-xs hover:underline"
                   >
                     Remove from this collection
                   </button>

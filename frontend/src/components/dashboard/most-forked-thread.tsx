@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, GitFork, ExternalLink } from "lucide-react";
+import { MostForkedThreadSkeleton } from "./most-forked-thread-skeleton";
 
 interface MostForkedThread {
   threadId: string;
@@ -15,9 +16,17 @@ interface MostForkedThread {
 
 interface MostForkedThreadProps {
   mostForkedThread: MostForkedThread | null;
+  loading?: boolean;
 }
 
-export function MostForkedThread({ mostForkedThread }: MostForkedThreadProps) {
+export function MostForkedThread({
+  mostForkedThread,
+  loading = false,
+}: MostForkedThreadProps) {
+  if (loading) {
+    return <MostForkedThreadSkeleton />;
+  }
+
   if (!mostForkedThread) {
     return (
       <Card className="col-span-full lg:col-span-2">

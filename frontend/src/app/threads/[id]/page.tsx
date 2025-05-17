@@ -10,6 +10,7 @@ import {
   User,
   GitFork,
 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import { MainLayout } from "@/components/layout/main-layout";
 import { TagBadge } from "@/components/thread/tag-badge";
@@ -18,6 +19,8 @@ import { threadAPI } from "@/lib/api";
 import { ReactionButtons } from "@/components/thread/reaction-buttons";
 import { BookmarkButton } from "@/components/thread/bookmark-button";
 import { AuthorLink } from "@/components/thread/author-link";
+import { ReactionSkeleton } from "@/components/thread/reaction-skeleton";
+import { BookmarkButtonSkeleton } from "@/components/thread/bookmark-button-skeleton";
 
 export default function ThreadDetailPage() {
   const { id } = useParams();
@@ -180,10 +183,23 @@ export default function ThreadDetailPage() {
   if (loading) {
     return (
       <MainLayout>
-        <div className="container py-8 flex justify-center">
-          <div className="animate-pulse w-full max-w-3xl">
+        <div className="container py-8">
+          <Link
+            href="/explore"
+            className="text-primary flex items-center gap-2 mb-4"
+          >
+            <ArrowLeft className="h-4 w-4" /> Back to Explore
+          </Link>
+
+          <div className="animate-pulse w-full max-w-3xl mx-auto">
             <div className="h-10 bg-secondary rounded mb-4"></div>
-            <div className="h-4 bg-secondary rounded mb-2 w-1/3"></div>
+            <div className="flex justify-between items-center mb-6">
+              <div className="h-4 bg-secondary rounded w-1/3"></div>
+              <div className="flex gap-3">
+                <BookmarkButtonSkeleton />
+                <Skeleton className="h-4 w-8" />
+              </div>
+            </div>
             <div className="h-40 bg-secondary rounded mb-6"></div>
             <div className="h-40 bg-secondary rounded"></div>
           </div>
@@ -309,19 +325,24 @@ export default function ThreadDetailPage() {
                   {segment.content}
                 </div>
                 <div className="flex justify-between items-center">
-                  {thread.status === "published" && (
-                    <ReactionButtons
-                      reactions={segment.reactions}
-                      onReact={(reaction) =>
-                        handleReaction(segment._id, reaction)
-                      }
-                      userId={user?._id}
-                      disabled={reactionLoading}
-                      className={
-                        reactionLoading ? "opacity-70 pointer-events-none" : ""
-                      }
-                    />
-                  )}
+                  {thread.status === "published" &&
+                    (reactionLoading ? (
+                      <ReactionSkeleton />
+                    ) : (
+                      <ReactionButtons
+                        reactions={segment.reactions}
+                        onReact={(reaction) =>
+                          handleReaction(segment._id, reaction)
+                        }
+                        userId={user?._id}
+                        disabled={reactionLoading}
+                        className={
+                          reactionLoading
+                            ? "opacity-70 pointer-events-none"
+                            : ""
+                        }
+                      />
+                    ))}
                   <div className="text-sm text-muted-foreground">
                     Part {index + 1} of {thread.segments.length}
                   </div>
