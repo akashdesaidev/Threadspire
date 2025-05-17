@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useTransition } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -48,31 +48,31 @@ export function ReactionsPerThread({
   threadsWithReactions,
   loading = false,
 }: ReactionsPerThreadProps) {
-  const [isLoading, setIsLoading] = useState(loading);
+  const [isPending, startTransition] = useTransition();
+  const [localData, setLocalData] = useState<ThreadWithReactions[]>([]);
+  const [selectedThread, setSelectedThread] = useState<string>("");
 
-  // Add useEffect to handle loading state changes with a delay
+  // Use transition to update local data when props change
   useEffect(() => {
-    // When loading becomes false (API call complete), wait a bit before resetting local state
-    if (loading === false && isLoading === true) {
-      // Small timeout to ensure data is processed before showing
-      const timer = setTimeout(() => {
-        setIsLoading(false);
-      }, 500);
-
-      return () => clearTimeout(timer);
-    } else {
-      setIsLoading(loading);
+    if (!loading && threadsWithReactions) {
+      startTransition(() => {
+        setLocalData(threadsWithReactions);
+        // Update selected thread if needed
+        if (threadsWithReactions.length > 0 && !selectedThread) {
+          setSelectedThread(threadsWithReactions[0].threadId);
+        }
+      });
     }
-  }, [loading]);
+  }, [threadsWithReactions, loading, selectedThread]);
 
-  if (isLoading || !threadsWithReactions || threadsWithReactions.length === 0) {
+  if (loading || isPending || !localData || localData.length === 0) {
     return <ReactionsPerThreadSkeleton />;
   }
 
   // Add more detailed debugging logs
   console.log("ReactionsPerThread component", {
-    threadCount: threadsWithReactions?.length || 0,
-    threadsData: threadsWithReactions?.map((t) => ({
+    threadCount: localData?.length || 0,
+    threadsData: localData?.map((t) => ({
       threadId: t.threadId,
       title: t.title,
       segmentsCount: t.segments?.length || 0,
@@ -81,7 +81,7 @@ export function ReactionsPerThread({
   });
 
   // More defensive check for empty or undefined data
-  if (!threadsWithReactions || threadsWithReactions.length === 0) {
+  if (!localData || localData.length === 0) {
     console.log("No reaction data available - rendering empty state");
     return (
       <Card className="col-span-full lg:col-span-4">
@@ -100,16 +100,9 @@ export function ReactionsPerThread({
     );
   }
 
-  // Safe initialization with checks
-  const [selectedThread, setSelectedThread] = useState<string>(() => {
-    const firstThread = threadsWithReactions[0];
-    return firstThread?.threadId || "";
-  });
-
   // Safely find current thread and guard against null
-  const currentThread = threadsWithReactions.find(
-    (t) => t.threadId === selectedThread
-  );
+  const currentThread =
+    localData.find((t) => t.threadId === selectedThread) || localData[0]; // Fallback to first thread if selected thread not found
 
   console.log(
     "Selected thread data:",
@@ -202,7 +195,7 @@ export function ReactionsPerThread({
               value={selectedThread}
               onChange={(e) => setSelectedThread(e.target.value)}
             >
-              {threadsWithReactions.map((thread) => (
+              {localData.map((thread) => (
                 <option key={thread.threadId} value={thread.threadId}>
                   {thread.title}
                 </option>

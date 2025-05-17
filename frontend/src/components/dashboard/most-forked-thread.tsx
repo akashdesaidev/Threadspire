@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useTransition } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -24,28 +24,23 @@ export function MostForkedThread({
   mostForkedThread,
   loading = false,
 }: MostForkedThreadProps) {
-  const [isLoading, setIsLoading] = useState(loading);
+  const [isPending, startTransition] = useTransition();
+  const [localData, setLocalData] = useState<MostForkedThread | null>(null);
 
-  // Add useEffect to handle loading state changes with a delay
+  // Use transition to update local data when props change
   useEffect(() => {
-    // When loading becomes false (API call complete), wait a bit before resetting local state
-    if (loading === false && isLoading === true) {
-      // Small timeout to ensure data is processed before showing
-      const timer = setTimeout(() => {
-        setIsLoading(false);
-      }, 500);
-
-      return () => clearTimeout(timer);
-    } else {
-      setIsLoading(loading);
+    if (!loading) {
+      startTransition(() => {
+        setLocalData(mostForkedThread);
+      });
     }
-  }, [loading]);
+  }, [mostForkedThread, loading]);
 
-  if (isLoading) {
+  if (loading || isPending) {
     return <MostForkedThreadSkeleton />;
   }
 
-  if (!mostForkedThread) {
+  if (!localData) {
     return (
       <Card className="col-span-full lg:col-span-2">
         <CardHeader>
@@ -65,13 +60,14 @@ export function MostForkedThread({
     );
   }
 
-  const formattedDate = new Date(
-    mostForkedThread.publishDate
-  ).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
+  const formattedDate = new Date(localData.publishDate).toLocaleDateString(
+    "en-US",
+    {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    }
+  );
 
   return (
     <Card className="col-span-full lg:col-span-2">
@@ -80,7 +76,7 @@ export function MostForkedThread({
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <h3 className="font-medium text-lg">{mostForkedThread.title}</h3>
+          <h3 className="font-medium text-lg">{localData.title}</h3>
 
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Calendar className="h-4 w-4" />
@@ -94,8 +90,8 @@ export function MostForkedThread({
             >
               <GitFork className="h-4 w-4" />
               <span>
-                {mostForkedThread.forkCount} fork
-                {mostForkedThread.forkCount !== 1 ? "s" : ""}
+                {localData.forkCount} fork
+                {localData.forkCount !== 1 ? "s" : ""}
               </span>
             </Badge>
           </div>
@@ -103,7 +99,7 @@ export function MostForkedThread({
 
         <div className="pt-4 flex flex-col gap-2">
           <Button variant="outline" asChild size="sm">
-            <Link href={`/threads/${mostForkedThread.threadId}`}>
+            <Link href={`/threads/${localData.threadId}`}>
               <ExternalLink className="h-4 w-4 mr-2" />
               View thread
             </Link>
