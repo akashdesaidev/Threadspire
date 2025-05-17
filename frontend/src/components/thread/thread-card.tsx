@@ -99,7 +99,14 @@ export function ThreadCard({
         <AuthorLink author={thread.author} size="sm" />
         <span>•</span>
         <span className="text-xs">
-          {new Date(thread.createdAt).toLocaleDateString()}
+          {(() => {
+            if (!thread.createdAt) return "Date unavailable";
+            try {
+              return new Date(thread.createdAt).toLocaleDateString();
+            } catch (e) {
+              return "Invalid date";
+            }
+          })()}
         </span>
       </div>
 

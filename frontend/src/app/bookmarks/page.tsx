@@ -172,11 +172,15 @@ export default function BookmarksPage() {
       }));
     }
 
-    return paginatedThreads.map((thread: any) => ({
-      ...thread,
-      isBookmarked: true,
-      collectionName: activeCollection,
-    }));
+    return paginatedThreads.map((thread: any) => {
+      // Ensure thread has all necessary properties, including a valid date
+      return {
+        ...thread,
+        isBookmarked: true,
+        collectionName: activeCollection,
+        createdAt: thread.createdAt || new Date().toISOString(), // Provide current date if missing
+      };
+    });
   };
 
   // Update URL with the selected collection
@@ -385,7 +389,7 @@ export default function BookmarksPage() {
 
                           {/* Show collection badge in All Bookmarks view */}
                           {!activeCollection && thread.collectionName && (
-                            <div className="absolute top-3 right-3 px-2 py-1 bg-secondary/80 rounded-md text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="absolute bottom-3 left-3 px-2 py-1 bg-secondary/80 rounded-md text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity">
                               In: {thread.collectionName}
                             </div>
                           )}
