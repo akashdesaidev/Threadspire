@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { ReactionsPerThread } from "@/components/dashboard/reactions-per-thread";
-import { MostForkedThread } from "@/components/dashboard/most-forked-thread";
+import { ForkedThreadsList } from "@/components/dashboard/most-forked-thread";
 import { ThreadActivityGraph } from "@/components/dashboard/thread-activity-graph";
 
 interface Pagination {
@@ -574,8 +574,9 @@ export default function DashboardPage() {
             threadsWithReactions={analyticsData.threadsWithReactions}
             loading={loading}
           />
-          <MostForkedThread
+          <ForkedThreadsList
             mostForkedThread={analyticsData.mostForkedThread}
+            forksByThread={analyticsData.forksByThread}
             loading={loading}
           />
         </div>
