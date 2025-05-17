@@ -131,7 +131,7 @@ export function ThreadActivityGraph() {
 
     if (!analytics) {
       console.warn("No analytics data available");
-      setActivityData(generateSampleData(parseInt(timeRange)));
+      setActivityData([]);
       return;
     }
 
@@ -142,7 +142,7 @@ export function ThreadActivityGraph() {
     // Check if we have any activity data
     if (Object.keys(activityByDate).length === 0) {
       console.warn("No activity data available, using sample data");
-      setActivityData(generateSampleData(parseInt(timeRange)));
+      setActivityData([]);
       return;
     }
 
@@ -215,7 +215,7 @@ export function ThreadActivityGraph() {
     // If we have no data after filtering, generate sample data
     if (Object.keys(filteredData).length === 0) {
       console.warn("No data after filtering, using sample data");
-      setActivityData(generateSampleData(parseInt(timeRange)));
+      setActivityData([]);
       return;
     }
 
@@ -265,40 +265,18 @@ export function ThreadActivityGraph() {
       console.log(`Data points after time filtering: ${formattedData.length}`);
       console.log("Filtered activity data:", formattedData);
 
-      // If no data after time filtering, use sample data
+      // If no data after time filtering, show empty state
       if (formattedData.length === 0) {
-        console.warn("No data after time filtering, using sample data");
-        setActivityData(generateSampleData(parseInt(timeRange)));
+        console.warn("No data after time filtering");
+        setActivityData([]);
         return;
       }
 
       setActivityData(formattedData);
     } catch (err) {
       console.error("Error applying time filter:", err);
-      setActivityData(generateSampleData(parseInt(timeRange)));
+      setActivityData([]);
     }
-  };
-
-  // Generate sample data for testing or when no data is available
-  const generateSampleData = (days: number): ThreadActivityData[] => {
-    console.log("Generating sample data for", days, "days");
-    const data: ThreadActivityData[] = [];
-    const today = new Date();
-
-    // Generate data points for the last 'days' days
-    for (let i = days; i >= 0; i -= Math.max(1, Math.floor(days / 10))) {
-      const date = new Date();
-      date.setDate(today.getDate() - i);
-      const dateStr = date.toISOString().split("T")[0];
-
-      data.push({
-        date: dateStr,
-        totalReactions: Math.floor(Math.random() * 20) + 1, // 1-20 reactions
-        formattedDate: format(date, "MMM dd"),
-      });
-    }
-
-    return data;
   };
 
   const lineColor = theme === "dark" ? "#10b981" : "#0ea5e9";
