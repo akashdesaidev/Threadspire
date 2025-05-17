@@ -9,6 +9,7 @@ import {
   RefreshCw,
   User,
   GitFork,
+  LogIn,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -25,7 +26,7 @@ import { BookmarkButtonSkeleton } from "@/components/thread/bookmark-button-skel
 export default function ThreadDetailPage() {
   const { id } = useParams();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [thread, setThread] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -34,6 +35,7 @@ export default function ThreadDetailPage() {
   const [reactionLoading, setReactionLoading] = useState(false);
   const [forks, setForks] = useState<any[]>([]);
   const [forksLoading, setForksLoading] = useState(false);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
   useEffect(() => {
     const fetchThread = async () => {
@@ -91,7 +93,8 @@ export default function ThreadDetailPage() {
 
   const handleBookmark = async () => {
     if (!user) {
-      router.push("/login");
+      setShowLoginPrompt(true);
+      setTimeout(() => setShowLoginPrompt(false), 3000);
       return;
     }
 
@@ -111,7 +114,8 @@ export default function ThreadDetailPage() {
 
   const handleFork = () => {
     if (!user) {
-      router.push("/login");
+      setShowLoginPrompt(true);
+      setTimeout(() => setShowLoginPrompt(false), 3000);
       return;
     }
 
@@ -130,7 +134,8 @@ export default function ThreadDetailPage() {
 
   const handleReaction = async (segmentId: string, reaction: string) => {
     if (!user) {
-      router.push("/login");
+      setShowLoginPrompt(true);
+      setTimeout(() => setShowLoginPrompt(false), 3000);
       return;
     }
 
@@ -225,7 +230,7 @@ export default function ThreadDetailPage() {
       </MainLayout>
     );
   }
-  console.log(thread);
+
   return (
     <MainLayout>
       <div className="container py-8">
@@ -235,6 +240,22 @@ export default function ThreadDetailPage() {
         >
           <ArrowLeft className="h-4 w-4" /> Back to Explore
         </Link>
+
+        {showLoginPrompt && (
+          <div className="max-w-3xl mx-auto mb-4 bg-primary/10 text-primary p-3 rounded-md flex items-center gap-2">
+            <LogIn className="h-4 w-4" />
+            <span>
+              Please{" "}
+              <Link
+                href="/login"
+                className="text-primary font-medium underline"
+              >
+                log in
+              </Link>{" "}
+              to perform this action
+            </span>
+          </div>
+        )}
 
         <div className="max-w-3xl mx-auto">
           <h1 className="text-3xl font-bold mb-4">{thread.title}</h1>
@@ -258,6 +279,8 @@ export default function ThreadDetailPage() {
                     isBookmarked={isBookmarked}
                     bookmarkCount={thread.bookmarkCount}
                     className="text-sm"
+                    requiresAuth={!user}
+                    onAuthRequired={handleBookmark}
                   />
 
                   <button

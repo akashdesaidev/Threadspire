@@ -20,7 +20,7 @@ const router = express.Router();
 router.get("/", getThreads);
 
 // Get thread by ID (public for published, authenticated for drafts)
-router.get("/:id", isAuthenticated, getThreadById);
+router.get("/:id", getThreadById);
 
 // Get forks of a thread
 router.get("/:id/forks", getThreadForks);

@@ -19,6 +19,8 @@ interface BookmarkButtonProps {
   bookmarkCount: number;
   className?: string;
   showCount?: boolean;
+  requiresAuth?: boolean;
+  onAuthRequired?: () => void;
 }
 
 export function BookmarkButton({
@@ -27,6 +29,8 @@ export function BookmarkButton({
   bookmarkCount,
   className,
   showCount = true,
+  requiresAuth = false,
+  onAuthRequired,
 }: BookmarkButtonProps) {
   const router = useRouter();
   const { user } = useAuth();
@@ -83,7 +87,11 @@ export function BookmarkButton({
 
   const toggleBookmark = async () => {
     if (!user) {
-      router.push("/login");
+      if (onAuthRequired) {
+        onAuthRequired();
+      } else {
+        router.push("/login");
+      }
       return;
     }
 

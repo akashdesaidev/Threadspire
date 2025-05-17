@@ -259,22 +259,34 @@ exports.getThreadById = async (req, res) => {
       authorEmail: thread.author.email,
     });
 
-    // Check if thread is a draft and user is not authenticated or not the author
+    // Check if thread is a draft
     if (thread.status === "draft") {
+      // If user is not authenticated, deny access to draft threads
+      if (!req.user) {
+        console.log(
+          "Permission denied: Unauthenticated user cannot view drafts"
+        );
+        return res.status(403).json({
+          success: false,
+          message:
+            "This thread is a draft and can only be viewed by its author",
+        });
+      }
+
       // Log the IDs for debugging
-      const requestUserId = req.user ? req.user._id.toString() : "null";
+      const requestUserId = req.user._id.toString();
       const threadAuthorId = thread.author._id.toString();
 
       console.log("Draft permission check:", {
         requestUserId,
         threadAuthorId,
-        isAuthor: req.user && requestUserId === threadAuthorId,
-        userIdType: req.user ? typeof req.user._id : "N/A",
+        isAuthor: requestUserId === threadAuthorId,
+        userIdType: typeof req.user._id,
         authorIdType: typeof thread.author._id,
       });
 
       // Use a direct string comparison after converting both to strings
-      if (!req.user || requestUserId !== threadAuthorId) {
+      if (requestUserId !== threadAuthorId) {
         console.log(
           "Permission denied: User not authorized to view this draft"
         );
@@ -286,6 +298,13 @@ exports.getThreadById = async (req, res) => {
       }
 
       console.log("Permission granted: User is the author of this draft");
+    }
+
+    // For published threads, check if this thread is bookmarked by the current user
+    let bookmarkedBy = [];
+    if (thread.status === "published" && req.user) {
+      const user = await User.findById(req.user._id).select("bookmarks");
+      bookmarkedBy = user.bookmarks.map((bookmark) => bookmark.toString());
     }
 
     // Get related versions if they exist
@@ -317,6 +336,7 @@ exports.getThreadById = async (req, res) => {
     res.status(200).json({
       success: true,
       thread,
+      bookmarkedBy: bookmarkedBy.length > 0 ? bookmarkedBy : [],
       relatedVersions:
         Object.keys(relatedVersions).length > 0 ? relatedVersions : null,
     });
